@@ -3,6 +3,7 @@ import Link from "next/link";
 import { GuardIcon, IsolateIcon, ObserveIcon, SimulateIcon } from "@/components/site/icons";
 import { IsoSandbox } from "@/components/site/IsoSandbox";
 import { Nav } from "@/components/site/Nav";
+import { SocialLinks } from "@/components/site/Social";
 import { WaveField } from "@/components/site/WaveField";
 import { Mark } from "@/components/site/Wordmark";
 import { CHAIN } from "@/lib/sim/engine";
@@ -181,7 +182,10 @@ export default function Home() {
           <span className="flex items-center gap-2 text-ink">
             <Mark className="size-5" /> <span className="font-bold">A2I2 Sandbox</span>
           </span>
-          <span>Experimental. Simulated markets only. Not financial advice.</span>
+          <div className="flex items-center gap-4">
+            <span>Experimental. Simulated markets only. Not financial advice.</span>
+            <SocialLinks />
+          </div>
         </div>
       </footer>
     </>

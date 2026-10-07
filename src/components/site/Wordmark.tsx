@@ -15,7 +15,7 @@ export function Wordmark({ href = "/" }: { href?: string }) {
     <Link href={href} className="flex items-center gap-2.5 text-ink" aria-label="A2I2 Sandbox home">
       <Mark />
       <span className="text-[17px] font-bold tracking-[-0.03em]">A2I2</span>
-      <span className="tag tag-plain text-muted">Sandbox</span>
+      <span className="tag tag-plain hidden text-muted sm:inline-flex">Sandbox</span>
     </Link>
   );
 }

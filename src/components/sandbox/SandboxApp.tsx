@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { SocialLinks } from "@/components/site/Social";
 import { Wordmark } from "@/components/site/Wordmark";
 import { CHAIN, type Snapshot } from "@/lib/sim/engine";
 import { STRATEGIES } from "@/lib/sim/strategies";
@@ -84,6 +85,7 @@ export function SandboxApp() {
             <span className={`tag ${snap.halted ? "text-orchid" : running ? "text-lime" : "text-muted"}`}>
               {snap.halted ? "Halted" : running ? "Running" : "Paused"}
             </span>
+            <SocialLinks />
           </div>
         </div>
       </header>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SocialLinks } from "./Social";
 import { Wordmark } from "./Wordmark";
 
 const LINKS = [
@@ -20,9 +21,12 @@ export function Nav() {
             </Link>
           ))}
         </nav>
-        <Link href="/sandbox" className="btn btn-primary btn-sm">
-          Launch sandbox
-        </Link>
+        <div className="flex items-center gap-2">
+          <SocialLinks />
+          <Link href="/sandbox" className="btn btn-primary btn-sm">
+            Launch<span className="hidden sm:inline"> sandbox</span>
+          </Link>
+        </div>
       </div>
     </header>
   );
