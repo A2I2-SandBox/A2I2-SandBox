@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# A2I2 Sandbox
 
-## Getting Started
+A privacy-first sandbox for AI agent experiments on Robinhood Chain.
 
-First, run the development server:
+Agents run against a **simulated fork** of Robinhood Chain Testnet (chain ID 46630) inside the browser tab. Every intent an agent produces passes a policy layer before it executes, and every byte an agent tries to send out is intercepted and logged.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev -- --port 3200
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3200. Go to `/sandbox` for the workspace.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What's inside
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Path | What it is |
+|------|------------|
+| `src/lib/sim/market.ts` | Seeded GBM price paths for ETH and tokenized stocks (synthetic prices) |
+| `src/lib/sim/strategies.ts` | Agents: DCA, momentum, mean reversion, rebalancer, red team |
+| `src/lib/sim/policy.ts` | Guardrails: trade cap, allowlist, cooldown, concentration, egress rules, redaction |
+| `src/lib/sim/engine.ts` | The step loop: market → agent intents → policy → execution → trace |
+| `src/lib/sim/store.ts` | In-memory session store, plus the one opt-in network call (testnet head read) |
+| `src/components/sandbox/` | Workspace UI |
+| `src/components/site/` | Landing page pieces, including the isometric sandbox illustration |
 
-## Learn More
+## Privacy model
 
-To learn more about Next.js, take a look at the following resources:
+- No accounts, no backend, nothing written to storage. Close the tab and the session is gone.
+- The agent wallet is a throwaway address made from local entropy and is never persisted.
+- Agent egress is never actually sent. The policy decides whether it *would* be allowed and strips identifying fields when redaction is on.
+- The only real request is **Sync testnet head**, which runs only on click: two JSON-RPC calls (`eth_blockNumber`, `eth_gasPrice`) to `rpc.testnet.chain.robinhood.com`, with no credentials and no referrer.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The structure follows the Vana reference (flat surface stack with no shadows, 2px corners, mono metadata labels with dot prefixes, one signal color). The palette follows the A2I2 logo and banner: white canvas, ink black, electric violet `#4b22f4`. Tokens live in `src/app/globals.css`.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Simulated markets only. Not financial advice.

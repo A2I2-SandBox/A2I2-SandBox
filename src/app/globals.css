@@ -1,26 +1,194 @@
 @import "tailwindcss";
 
+/*
+ * A2I2 design tokens.
+ * Structure follows the Vana reference (flat surface stack, 2px corners,
+ * pixel-mono metadata labels, one signal color); the palette follows the
+ * A2I2 logo and banner: white canvas, ink black, electric violet.
+ */
+@theme {
+  /* Surfaces: elevation comes from this stack, never from shadows. */
+  --color-canvas: #ffffff;
+  --color-panel: #f8f7fd;
+  --color-lift: #f0edfb;
+  --color-steel: #e4e0f7;
+
+  /* Text */
+  --color-ink: #0b0b14;
+  --color-body: #3c3a4d;
+  --color-muted: #6c6983;
+
+  /* Signal: the only filled CTA color, taken from the logo accent. */
+  --color-violet: #4b22f4;
+  --color-violet-hover: #3a14d6;
+  --color-cobalt: #6a4dff;
+  --color-periwinkle: #8b7cff;
+  --color-lavender: #d6cfff;
+  --color-haze: #efebff;
+
+  /* Rare punctuation: thin strokes, dots and small text only, never fills. */
+  --color-lime: #23874a;
+  --color-orchid: #a63fd8;
+
+  --color-line: rgb(11 11 20 / 0.1);
+  --color-line-strong: rgb(11 11 20 / 0.22);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: var(--font-pixel-mono), ui-monospace, monospace;
+
+  --radius-sharp: 2px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--color-lavender);
+  color: var(--color-ink);
+}
+
+@layer components {
+  /* Display headline: tight tracking is the signature, not a default. */
+  .display {
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+
+  /* Pixel metadata label with a leading dot. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+  .tag::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    opacity: 0.45;
+  }
+  .tag-plain::before {
+    display: none;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 11px 20px;
+    border-radius: var(--radius-sharp);
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: background-color 120ms, border-color 120ms, color 120ms;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--color-violet);
+    outline-offset: 2px;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .btn-primary {
+    background: var(--color-violet);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: var(--color-violet-hover);
+  }
+  .btn-ghost {
+    border-color: var(--color-periwinkle);
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover {
+    background: var(--color-haze);
+  }
+  .btn-neutral {
+    background: var(--color-lift);
+    color: var(--color-ink);
+  }
+  .btn-neutral:hover {
+    background: var(--color-steel);
+  }
+  .btn-sm {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sharp);
+  }
+
+  /* Faint blueprint grid, the sandbox floor. */
+  .grid-floor {
+    background-image:
+      linear-gradient(var(--color-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes drift {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+@keyframes pulse-dot {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.anim-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin-slow 14s linear infinite;
+}
+.anim-drift {
+  animation: drift 2.4s linear infinite;
+}
+.anim-pulse {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-spin,
+  .anim-drift,
+  .anim-pulse {
+    animation: none;
+  }
+}
+
+input[type="range"] {
+  accent-color: var(--color-violet);
 }
