@@ -179,10 +179,15 @@ export default function Home() {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-4 py-8 text-[13px] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <span className="flex items-center gap-2 text-ink">
-            <Mark className="size-5" /> <span className="font-bold">A2I2 Sandbox</span>
-          </span>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span className="flex items-center gap-2 text-ink">
+              <Mark className="size-5" /> <span className="font-bold">A2I2 Sandbox</span>
+            </span>
+            <a href="mailto:support@a2i2sandbox.com" className="font-pixel text-[12px] text-violet hover:underline">
+              support@a2i2sandbox.com
+            </a>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
             <span>Experimental. Simulated markets only. Not financial advice.</span>
             <SocialLinks />
           </div>
