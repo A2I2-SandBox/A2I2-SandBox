@@ -13,9 +13,8 @@ export function Mark({ className = "size-6" }: { className?: string }) {
 export function Wordmark({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center gap-2.5 text-ink" aria-label="A2I2 Sandbox home">
-      <Mark />
-      <span className="text-[17px] font-bold tracking-[-0.03em]">A2I2</span>
-      <span className="tag tag-plain hidden text-muted sm:inline-flex">Sandbox</span>
+      <Mark className="size-7 sm:size-8" />
+      <span className="whitespace-nowrap text-[19px] font-bold tracking-[-0.03em] sm:text-[23px]">A2I2 Sandbox</span>
     </Link>
   );
 }
