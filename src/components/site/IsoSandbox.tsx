@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
+// The sandbox as one glass cube on a faint isometric floor. Inside, the A2I2
+// mascot keeps trying to break out: it charges the right wall, the left wall,
+// then jumps for the ceiling. The glass flashes and holds every time
+// (keyframes in globals.css).
 
-// Isometric line drawing of the sandbox: a tray of sealed cells, an agent
-// (the asterisk) in one, the glass cube from the banner in another, and the
-// agent's dashed trace between them.
-
-const U = 78;
+const U = 150;
 const COS = Math.cos(Math.PI / 6);
 const OX = 260;
-const OY = 150;
-const N = 3;
-const WALL = 0.42;
+const OY = 292;
+const S = 0.5; // half the cube's footprint
+const H = 1; // cube height
+const MASCOT_SCALE = 2.2;
 
 type Pt = [number, number];
 const P = (x: number, y: number, z = 0): Pt => [OX + (x - y) * COS * U, OY + (x + y) * 0.5 * U - z * U];
@@ -17,103 +17,99 @@ const pts = (...p: Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
 
 const INK = "var(--color-ink)";
 const VIOLET = "var(--color-violet)";
+const DEEP = "var(--color-violet-hover)";
 
-function wall(x0: number, y0: number, x1: number, y1: number, alongX: boolean) {
+/** The mascot, drawn with its feet at the origin. */
+function Mascot() {
   return (
-    <polygon
-      points={pts(P(x0, y0), P(x1, y1), P(x1, y1, WALL), P(x0, y0, WALL))}
-      fill={alongX ? "var(--color-lavender)" : "var(--color-haze)"}
-      stroke={INK}
-      strokeWidth={1.3}
-      strokeLinejoin="round"
-    />
-  );
-}
-
-function Agent({ cx, cy }: { cx: number; cy: number }) {
-  const [bx, by] = P(cx, cy, 0);
-  const [tx, ty] = P(cx, cy, 1.25);
-  const r = 17;
-  return (
-    <g stroke={VIOLET} strokeWidth={5}>
-      <line x1={bx} y1={by - 4} x2={tx} y2={ty + r + 8} />
-      <g className="anim-spin">
-        {[0, 45, 90, 135].map((deg) => {
-          const a = (deg * Math.PI) / 180;
-          return <line key={deg} x1={tx - r * Math.cos(a)} y1={ty - r * Math.sin(a)} x2={tx + r * Math.cos(a)} y2={ty + r * Math.sin(a)} />;
+    <g className="mascot-run">
+      <rect x={-9.5} y={-8} width={6} height={8} rx={2.4} fill={DEEP} />
+      <rect x={3.5} y={-8} width={6} height={8} rx={2.4} fill={DEEP} />
+      <g stroke={DEEP} strokeWidth={3.4} strokeLinecap="round">
+        <line x1={-17} y1={-25} x2={-23} y2={-15} />
+        <line x1={17} y1={-25} x2={23} y2={-15} />
+      </g>
+      <line x1={0} y1={-38} x2={0} y2={-44} stroke={DEEP} strokeWidth={1.6} />
+      <g stroke={VIOLET} strokeWidth={1.6} strokeLinecap="square">
+        {[0, 45, 90, 135].map((d) => {
+          const a = (d * Math.PI) / 180;
+          return <line key={d} x1={-3.4 * Math.cos(a)} y1={-47.5 - 3.4 * Math.sin(a)} x2={3.4 * Math.cos(a)} y2={-47.5 + 3.4 * Math.sin(a)} />;
         })}
       </g>
+      <rect x={-17.5} y={-38.5} width={35} height={31} rx={7.5} fill={VIOLET} stroke={DEEP} strokeWidth={0.8} />
+      <rect x={-13} y={-34.5} width={26} height={18.5} rx={4.5} fill="#fff" />
+      <g className="mascot-eyes-open" fill={INK}>
+        <rect x={-6.8} y={-30} width={3} height={6} rx={1.5} />
+        <rect x={3.8} y={-30} width={3} height={6} rx={1.5} />
+      </g>
+      <g className="mascot-eyes-shut" stroke={INK} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M-7.5,-29.5 L-4,-27 L-7.5,-24.5" />
+        <path d="M7.5,-29.5 L4,-27 L7.5,-24.5" />
+      </g>
+      <path d="M-2.6,-20.6 Q0,-18.6 2.6,-20.6" fill="none" stroke={INK} strokeWidth={1.1} strokeLinecap="round" />
+      <path d="M-2.4,-12 h3.6 l-1,2 h-3.6 z" fill="#fff" opacity={0.9} />
     </g>
   );
 }
 
-function GlassCube({ cx, cy }: { cx: number; cy: number }) {
-  const s = 0.32;
-  const h = 0.64;
-  const [x0, x1, y0, y1] = [cx - s, cx + s, cy - s, cy + s];
-  const [nx, ny] = P(cx, cy, h / 2);
-  const nodes: Pt[] = [[-12, -6], [10, -10], [14, 6], [-4, 13], [-15, 7], [3, -15], [0, 0]];
+/** Faint isometric floor grid that fades out away from the cube. */
+function Floor() {
+  const lines: { a: Pt; b: Pt; o: number }[] = [];
+  const R = 1.5;
+  for (let k = -R; k <= R + 0.001; k += 0.5) {
+    const o = 0.9 - Math.abs(k) / (R + 0.5);
+    lines.push({ a: P(k, -R), b: P(k, R), o });
+    lines.push({ a: P(-R, k), b: P(R, k), o });
+  }
   return (
-    <g>
-      {/* Hidden back edges, dashed for the glass look. */}
-      <g stroke={VIOLET} strokeWidth={1} strokeDasharray="3 3" opacity={0.6}>
-        <line x1={P(x0, y0)[0]} y1={P(x0, y0)[1]} x2={P(x1, y0)[0]} y2={P(x1, y0)[1]} />
-        <line x1={P(x0, y0)[0]} y1={P(x0, y0)[1]} x2={P(x0, y1)[0]} y2={P(x0, y1)[1]} />
-        <line x1={P(x0, y0)[0]} y1={P(x0, y0)[1]} x2={P(x0, y0, h)[0]} y2={P(x0, y0, h)[1]} />
-      </g>
-      <g stroke={VIOLET} strokeWidth={0.8} opacity={0.75}>
-        {nodes.flatMap(([ax, ay], i) =>
-          nodes.slice(i + 1, i + 3).map(([bx, by], j) => <line key={`${i}-${j}`} x1={nx + ax} y1={ny + ay} x2={nx + bx} y2={ny + by} />),
-        )}
-      </g>
-      {nodes.map(([ax, ay], i) => (
-        <circle key={i} cx={nx + ax} cy={ny + ay} r={i === nodes.length - 1 ? 3.5 : 2} fill={VIOLET} className={i === nodes.length - 1 ? "anim-pulse" : undefined} />
+    <g stroke="var(--color-line-strong)" strokeWidth={1} strokeDasharray="2 5">
+      {lines.map(({ a, b, o }, i) => (
+        <line key={i} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} opacity={o} />
       ))}
-      {/* Visible faces */}
-      <g fill={VIOLET} fillOpacity={0.05} stroke={VIOLET} strokeWidth={1.4} strokeLinejoin="round">
-        <polygon points={pts(P(x0, y1), P(x1, y1), P(x1, y1, h), P(x0, y1, h))} />
-        <polygon points={pts(P(x1, y0), P(x1, y1), P(x1, y1, h), P(x1, y0, h))} />
-        <polygon points={pts(P(x0, y0, h), P(x1, y0, h), P(x1, y1, h), P(x0, y1, h))} />
-      </g>
     </g>
   );
 }
 
 export function IsoSandbox({ className = "" }: { className?: string }) {
-  const items: { depth: number; node: ReactNode }[] = [];
-  for (let i = 0; i <= N; i++) {
-    for (let j = 0; j < N; j++) {
-      items.push({ depth: i + j + 0.5, node: wall(j, i, j + 1, i, true) });
-      items.push({ depth: i + j + 0.5, node: wall(i, j, i, j + 1, false) });
-    }
-  }
-  items.push({ depth: 2, node: <Agent cx={0.5} cy={1.5} /> });
-  items.push({ depth: 3, node: <GlassCube cx={1.5} cy={1.5} /> });
-  items.sort((a, b) => a.depth - b.depth);
-
-  const [ax, ay] = P(0.5, 1.5, 1.25);
-  const [bx, by] = P(1.5, 1.5, 0.95);
-  const [cx, cy] = P(2.5, 0.5, 0.75);
-  const [kx, ky] = P(2.5, 0.5, 0.02);
+  const [x0, x1, y0, y1] = [-S, S, -S, S];
+  const [fx, fy] = P(0, 0, 0);
+  const face = { fill: VIOLET, stroke: VIOLET, strokeWidth: 2, strokeLinejoin: "round" as const };
+  const back: [Pt, Pt][] = [
+    [P(x0, y0), P(x1, y0)],
+    [P(x0, y0), P(x0, y1)],
+    [P(x0, y0), P(x0, y0, H)],
+  ];
+  // Reflections on the front-left pane.
+  const glint = (t: number): [Pt, Pt] => [P(x0 + t, y1, 0.25), P(x0 + t + 0.22, y1, 0.75)];
 
   return (
-    <svg viewBox="40 80 440 320" className={className} role="img" aria-label="An agent inside an isolated grid of sandbox cells">
-      <polygon points={pts(P(0, 0), P(N, 0), P(N, N), P(0, N))} fill="var(--color-canvas)" stroke={INK} strokeWidth={1.3} />
-      {/* The agent's last destination cell, tinted. */}
-      <polygon points={pts(P(2, 0), P(3, 0), P(3, 1), P(2, 1))} fill="var(--color-haze)" />
-      <circle cx={kx} cy={ky} r={5} fill="none" stroke="var(--color-lime)" strokeWidth={1.5} />
-      {items.map((it, i) => (
-        <g key={i}>{it.node}</g>
-      ))}
-      <path
-        d={`M${ax + 22},${ay + 6} Q${(ax + bx) / 2},${ay - 40} ${bx},${by - 30} T${cx},${cy}`}
-        fill="none"
-        stroke={VIOLET}
-        strokeWidth={1.4}
-        strokeDasharray="5 5"
-        className="anim-drift"
-      />
-      <line x1={cx} y1={cy} x2={kx} y2={ky - 6} stroke={VIOLET} strokeWidth={1} strokeDasharray="2 3" />
+    <svg viewBox="40 52 440 336" className={className} role="img" aria-label="The A2I2 mascot inside a glass cube, trying and failing to break out">
+      <Floor />
+      {/* Glass floor */}
+      <polygon points={pts(P(x0, y0), P(x1, y0), P(x1, y1), P(x0, y1))} fill="var(--color-haze)" stroke={VIOLET} strokeWidth={1} strokeOpacity={0.4} />
+      {/* Back panes and hidden edges */}
+      <polygon points={pts(P(x0, y0), P(x1, y0), P(x1, y0, H), P(x0, y0, H))} fill={VIOLET} fillOpacity={0.03} />
+      <polygon points={pts(P(x0, y0), P(x0, y1), P(x0, y1, H), P(x0, y0, H))} fill={VIOLET} fillOpacity={0.05} />
+      <g stroke={VIOLET} strokeWidth={1.2} strokeDasharray="4 4" opacity={0.5}>
+        {back.map(([a, b], i) => (
+          <line key={i} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />
+        ))}
+      </g>
+
+      <g transform={`translate(${fx.toFixed(1)} ${fy.toFixed(1)}) scale(${MASCOT_SCALE})`}>
+        <Mascot />
+      </g>
+
+      {/* Front panes: each one flashes when the mascot hits it */}
+      <polygon className="glass glass-left" points={pts(P(x0, y1), P(x1, y1), P(x1, y1, H), P(x0, y1, H))} {...face} />
+      <polygon className="glass glass-right" points={pts(P(x1, y0), P(x1, y1), P(x1, y1, H), P(x1, y0, H))} {...face} />
+      <polygon className="glass glass-top" points={pts(P(x0, y0, H), P(x1, y0, H), P(x1, y1, H), P(x0, y1, H))} {...face} />
+      <g stroke="#fff" strokeWidth={3} strokeLinecap="round" opacity={0.85}>
+        {[0.12, 0.2].map((t) => {
+          const [a, b] = glint(t);
+          return <line key={t} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />;
+        })}
+      </g>
     </svg>
   );
 }
